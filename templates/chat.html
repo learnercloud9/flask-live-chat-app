@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Chat</title>
+    <script src="https://cdn.socket.io/socket.io-3.0.3.min.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #messages { list-style-type: none; padding: 0; }
+        li { padding: 5px 10px; }
+        input { padding: 8px; }
+    </style>
+</head>
+<body>
+    <h2>Live Chat App</h2>
+    <div>
+        <label>Enter your name:</label>
+        <input id="username" />
+        <button onclick="joinChat()">Join</button>
+    </div>
+
+    <ul id="messages"></ul>
+    <form id="chatForm" style="display:none;">
+        <input id="msg" autocomplete="off" placeholder="Type your message..." />
+        <button>Send</button>
+    </form>
+
+    <script>
+        var socket;
+        var username;
+
+        function joinChat() {
+            username = document.getElementById('username').value.trim();
+            if (username === '') {
+                alert("Please enter a name");
+                return;
+            }
+            socket = io();
+            document.getElementById('chatForm').style.display = 'block';
+
+            socket.on('message', function(data) {
+                let chatBox = document.getElementById('messages');
+                let newMsg = document.createElement('li');
+                newMsg.innerText = `${data.user}: ${data.msg}`;
+                chatBox.appendChild(newMsg);
+            });
+
+            document.getElementById('username').disabled = true;
+        }
+
+        document.getElementById('chatForm').onsubmit = function(e) {
+            e.preventDefault();
+            let msg = document.getElementById('msg').value;
+            socket.emit('message', { user: username, msg: msg });
+            document.getElementById('msg').value = '';
+        };
+    </script>
+</body>
+</html>
